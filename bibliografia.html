@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bibliografía</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            margin: 10px 0;
+        }
+        .back-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        .header {
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin-right: 15px;
+            object-fit: contain;
+        }
+        
+        .school-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <img src="logo.png" alt="Logo del Colegio" class="logo">
+            <div class="school-name">UNIDAD EDUCATIVA MUNICIPAL CAYAMBE</div>
+        </div>
+    </div>
+    <div class="container">
+        <h1>Bibliografía</h1>
+        <div id="content"></div>
+        <button class="back-button" onclick="window.location.href='index.html'">Volver a Escanear</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const record = JSON.parse(localStorage.getItem('qrRecord'));
+            const contentDiv = document.getElementById('content');
+
+            if (record) {
+                let html = `
+                    <div style="text-align:center;margin-bottom:20px;">
+                        <img src="${record.image}" style="max-width:200px;max-height:200px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+                    </div>
+                    <p><strong>Información del Registro:</strong></p>
+                    <p><strong>Código:</strong> ${record.codigo}</p>
+                    <p><strong>Nombre:</strong> ${record.nombre}</p>
+                    <p><strong>Edad:</strong> ${record.edad}</p>
+                    <p><strong>Descripción:</strong> ${record.descripcion}</p>
+                `;
+                if (record.cumpleanos) {
+                    html += `<p><strong>Fecha de Cumpleaños:</strong> ${record.cumpleanos}</p>`;
+                }
+                if (record.lugar_nacimiento) {
+                    html += `<p><strong>Lugar de Nacimiento:</strong> ${record.lugar_nacimiento}</p>`;
+                }
+                contentDiv.innerHTML = html;
+            } else {
+                contentDiv.innerHTML = '<p>No se encontraron datos.</p>';
+            }
+        });
+    </script>
+</body>
+</html>

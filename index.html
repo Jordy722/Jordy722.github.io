@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escaner de QR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #canvas {
+            border: 2px solid #333;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        #output {
+            font-size: 18px;
+            color: #333;
+            text-align: center;
+        }
+        #outputData {
+            word-break: break-all;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            width: 100%;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            margin-right: 15px;
+            object-fit: contain;
+        }
+        
+        .school-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <img src="logo.png" alt="Logo del Colegio" class="logo">
+            <div class="school-name">UNIDAD EDUCATIVA MUNICIPAL CAYAMBE</div>
+        </div>
+    </div>
+    <h1>Escaner de Código QR</h1>
+    <video id="video" width="300" height="300" style="display:none;"></video>
+    <canvas id="canvas"></canvas>
+    <div id="output">
+        <div id="outputMessage">Apunta la cámara a un código QR</div>
+        <div id="outputData"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvasElement = document.getElementById('canvas');
+        const canvas = canvasElement.getContext('2d', { willReadFrequently: true });
+        const outputMessage = document.getElementById('outputMessage');
+        const outputData = document.getElementById('outputData');
+
+        fetch('data.json')
+            .then(response => response.json())
+            .then(data => {
+                window.qrData = data;
+            })
+            .catch(error => {
+                console.error('Error al cargar el JSON:', error);
+                outputMessage.textContent = 'Error al cargar los datos.';
+            });
+
+        function startScanner() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.setAttribute("playsinline", true);
+                    video.play();
+                    requestAnimationFrame(tick);
+                })
+                .catch(function(err) {
+                    console.error("Error al acceder a la cámara: ", err);
+                    outputMessage.textContent = "No se pudo acceder a la cámara. Verifica los permisos.";
+                });
+        }
+
+        function tick() {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvasElement.height = video.videoHeight;
+                canvasElement.width = video.videoWidth;
+                canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+                const imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                    inversionAttempts: "dontInvert",
+                });
+
+                if (code) {
+                    outputMessage.textContent = "¡Código QR detectado!";
+                    outputData.textContent = code.data;
+
+                    console.log("Código QR detectado:", code.data);
+                    const record = window.qrData.find(item => item.codigo === code.data);
+                    if (record) {
+                        localStorage.setItem('qrRecord', JSON.stringify(record));
+                        window.location.href = 'bibliografia.html';
+                    } else {
+                        window.location.href = 'noencontrado.html';
+                    }
+                } else {
+                    outputMessage.textContent = "Apunta la cámara a un código QR";
+                    outputData.textContent = "";
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+
+        document.addEventListener("DOMContentLoaded", startScanner);
+    </script>
+</body>
+</html>
